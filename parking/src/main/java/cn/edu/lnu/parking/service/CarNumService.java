@@ -23,4 +23,6 @@ public interface CarNumService extends IService<CarNum> {
     CarNum getCarNumDetail(String num, Integer userId);
 
     Result updateCarNum(CarNum carNum);
+
+    CarNum getByNum(String num);
 }

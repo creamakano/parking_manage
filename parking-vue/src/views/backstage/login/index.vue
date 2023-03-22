@@ -3,6 +3,7 @@ import { ref, reactive } from "@vue/reactivity"
 import { post, get } from '../../../tool/http.js'
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
+import { ElMessage } from "element-plus";
 const route = useRouter()
 const store = useStore()
 const form = reactive({
@@ -42,7 +43,10 @@ function backLogin () {
   post('/employee/login', backForm).then(res => {
     if (res.code == 200) {
       store.commit('setEmployee', res.data)
+      ElMessage.success('登录成功')
       route.push('/back/home')
+    } else {
+      ElMessage.error(res.msg)
     }
   })
 }

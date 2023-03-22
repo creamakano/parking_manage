@@ -26,7 +26,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         wrapper.eq(Employee::getCode,employee.getCode())
                 .eq(Employee::getPassword,employee.getPassword());
         Employee loginEmployee  = this.getOne(wrapper);
-        if(ObjectUtils.isNotNull(employee)){
+        if(ObjectUtils.isNotNull(loginEmployee)){
             session.setAttribute("LoginEmployee",loginEmployee);
             return Result.success(loginEmployee);
         }

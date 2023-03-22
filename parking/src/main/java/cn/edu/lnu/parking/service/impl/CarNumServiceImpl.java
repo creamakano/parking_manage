@@ -96,6 +96,13 @@ public class CarNumServiceImpl extends ServiceImpl<CarNumMapper, CarNum> impleme
         return Result.success();
     }
 
+    @Override
+    public CarNum getByNum(String num) {
+        LambdaQueryWrapper<CarNum> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CarNum::getNum,num);
+        return this.getOne(wrapper);
+    }
+
     void buildCondition(LambdaQueryWrapper<CarNum> wrapper, CarNumVo vo) {
         if(vo.getUserId() != null){
             wrapper.eq(CarNum::getUserId,vo.getUserId());

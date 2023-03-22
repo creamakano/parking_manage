@@ -11,11 +11,13 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.WeakHashMap;
 
 @Service
 public class ParkingServiceImpl extends ServiceImpl<ParkingMapper, Parking> implements ParkingService {
@@ -48,6 +50,16 @@ public class ParkingServiceImpl extends ServiceImpl<ParkingMapper, Parking> impl
 
     @Override
     public Result update(Parking parking) {
+        Integer status = this.getById(parking.getId()).getStatus();
+        if(status == 1){
+            return Result.error("该车位在停中，禁止修改");
+        }
+        LambdaQueryWrapper<Parking> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Parking::getCode,parking.getCode())
+                .ne(Parking::getId,parking.getId());
+        if(ObjectUtils.isNotEmpty(this.list(wrapper))){
+            return Result.error("该车位编号已存在");
+        }
         return Result.success(this.updateById(parking));
     }
 
@@ -279,6 +291,47 @@ public class ParkingServiceImpl extends ServiceImpl<ParkingMapper, Parking> impl
         LambdaQueryWrapper<Parking> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Parking::getCarNum , carNum);
         return this.getOne(wrapper);
+    }
+
+    @Override
+    public Result backPickUp(Parking parking) {
+        Integer id = parking.getId();
+        Parking park = this.getById(id);
+        //车牌号是否停在私人车位
+        Integer privateParkingId = relService.getPrivateParkingId(park.getCarNum());
+        boolean isPrivateFlag = privateParkingId!=null&&privateParkingId.equals(parking.getId());
+        ParkingLog log = new ParkingLog();
+        log.setCarNum(park.getCarNum());
+        log.setStartTime(park.getStartTime());
+        log.setAreaId(park.getAreaId());
+        log.setCode(park.getCode());
+        log.setType(park.getType());
+        log.setEndTime(new Date());
+        log.setCost(isPrivateFlag?0:getPrice(log));
+        logService.save(log);
+        baseMapper.pickUp(id);
+        if(isPrivateFlag){
+            return new Result(201, "取车成功，私人车位，无需缴费");
+        }
+        if (log.getCost() > 0) {
+            Order order = new Order();
+            order.setOut_trade_no(OrderUtil.getOrderNum());
+            order.setSubject("停车收费");
+            order.setTotal_amount(String.valueOf(log.getCost()));
+            order.setReturnUrl(parking.getReturnUrl());
+            //获取车辆主人
+            CarNum carNum = carNumService.getByNum(park.getNum());
+            if(carNum!=null) {
+                User user = userService.getById(carNum.getUserId());
+                int point = user.getPoint() + (int) (double) log.getCost();
+                user.setPoint(point);
+                user.setLevel(paymentService.getLevel(point));
+                userService.updateById(user);
+            }
+            return paymentService.toAlipay(order);
+        }
+        return new Result(201, "取车成功，停车时间小于30分钟，无需缴费");
+
     }
 
 

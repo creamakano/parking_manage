@@ -37,5 +37,6 @@ public class ParkingLogServiceImpl extends ServiceImpl<ParkingLogMapper, Parking
         if(ObjectUtils.isNotNull(vo.getType())){
             wrapper.eq(ParkingLog::getType,vo.getType());
         }
+        wrapper.orderByDesc(ParkingLog::getEndTime);
     }
 }

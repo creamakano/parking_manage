@@ -32,5 +32,6 @@ public class ChargeLogServiceImpl extends ServiceImpl<ChargeLogMapper, ChargeLog
         if (vo.getType() != null) {
             wrapper.eq(ChargeLog::getType, vo.getType());
         }
+        wrapper.orderByDesc(ChargeLog::getEndTime);
     }
 }

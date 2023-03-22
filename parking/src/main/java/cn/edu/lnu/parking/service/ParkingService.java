@@ -35,4 +35,6 @@ public interface ParkingService extends IService<Parking> {
     Result myPlace(CarNumPlaceRelVo vo);
 
     Parking getByCarNum(String carNum);
+
+    Result backPickUp(Parking parking);
 }

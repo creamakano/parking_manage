@@ -44,7 +44,7 @@ public class ParkingController {
      * 更新
      **/
     @RequestMapping("/update")
-    public Result update(Parking parking){
+    public Result update(@RequestBody Parking parking){
         return parkingService.update(parking);
     }
 
@@ -114,12 +114,25 @@ public class ParkingController {
         }
         String returnUrl = parking.getReturnUrl();
         parking = parkingService.getByCarNum(parking.getNum());
-        parking.setReturnUrl(returnUrl);
         if(parking == null){
             return Result.error("查无该车");
         }
+        parking.setReturnUrl(returnUrl);
         parking.setUserId(user.getId());
         return parkingService.frontPickUp(parking);
+    }
+    /**
+     * 后台根据车牌号取车
+     */
+    @PostMapping("/back/pickUpByCarNum")
+    public Result backPickUpByCarNum(@RequestBody Parking parking){
+        String returnUrl = parking.getReturnUrl();
+        parking = parkingService.getByCarNum(parking.getNum());
+        if(parking == null){
+            return Result.error("查无该车");
+        }
+        parking.setReturnUrl(returnUrl);
+        return parkingService.backPickUp(parking);
     }
 
 
@@ -165,11 +178,6 @@ public class ParkingController {
      */
     @PostMapping("/front/parkByCarNum")
     public Result parkByCarNum(@RequestBody CarNum carNum, HttpSession session) {
-        User user = (User) session.getAttribute("LoginUser");
-        if(user == null){
-            return Result.unauthorized();
-        }
-        carNum.setUserId(user.getId());
         return parkingService.parkByCarNum(carNum);
     }
 }
