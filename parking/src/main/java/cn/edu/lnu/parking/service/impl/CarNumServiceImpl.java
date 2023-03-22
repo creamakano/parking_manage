@@ -69,6 +69,33 @@ public class CarNumServiceImpl extends ServiceImpl<CarNumMapper, CarNum> impleme
         return Result.success(carNumList);
     }
 
+    @Override
+    public boolean existCarNum(String carNum, Integer id) {
+        LambdaQueryWrapper<CarNum> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CarNum::getNum,carNum);
+        if(id != null){
+            wrapper.ne(CarNum::getId,id);
+        }
+        return ObjectUtils.isNotEmpty(this.list(wrapper));
+    }
+
+    @Override
+    public CarNum getCarNumDetail(String num, Integer userId) {
+        LambdaQueryWrapper<CarNum> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CarNum::getNum,num);
+        wrapper.eq(CarNum::getUserId,userId);
+        return getOne(wrapper);
+    }
+
+    @Override
+    public Result updateCarNum(CarNum carNum) {
+        if(existCarNum(carNum.getNum(),carNum.getId())){
+            return Result.error("该车牌号已存在，不能重复添加");
+        }
+        this.updateById(carNum);
+        return Result.success();
+    }
+
     void buildCondition(LambdaQueryWrapper<CarNum> wrapper, CarNumVo vo) {
         if(vo.getUserId() != null){
             wrapper.eq(CarNum::getUserId,vo.getUserId());

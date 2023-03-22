@@ -4,6 +4,8 @@ import { Search, Plus } from '@element-plus/icons-vue'
 import { get, post, del } from "../../../../tool/http";
 import { ElMessage } from 'element-plus'
 import { useRouter } from "vue-router";
+import CarNumKeyboard from "../../../../components/CarNumKeyboard.vue";
+
 const route = useRouter()
 //字典
 const areaMap = reactive({})
@@ -30,7 +32,7 @@ const form = reactive({
   code: null,
   pageNo: 1,
   pageSize: 10,
-  carNum:null
+  carNum: null
 
 })
 const total = ref(0)
@@ -56,6 +58,51 @@ function handleSizeChange () {
 }
 function handleCurrentChange () {
   getPage()
+}
+
+//车位租借
+const rentForm = reactive({
+  id: '',
+  carNum: ''
+})
+const rentDialog = ref(false)
+function openRentDialog (row) {
+  datetime.value = new Date().getTime()
+  rentForm.id = row.id
+  rentDialog.value = true
+}
+const child = ref()
+const datetime = ref(new Date().getTime())
+function getCarNum (data) {
+  rentForm.carNum = data
+}
+
+function rent () {
+  if (!child.value.checkInputFinshed()) {
+    return
+  }
+  post('/carNumPlaceRel/rent', rentForm).then(res => {
+    if (res.code == 200) {
+      ElMessage.success('租借成功')
+      getPage()
+      rentDialog.value = false
+    } else {
+      ElMessage.error(res.msg)
+    }
+  })
+}
+
+// 收回车位
+function getBack(id){
+  post('/carNumPlaceRel/getBack', {id:id}).then(res => {
+    if (res.code == 200) {
+      ElMessage.success('收回成功')
+      getPage()
+      rentDialog.value = false
+    } else {
+      ElMessage.error(res.msg)
+    }
+  })
 }
 </script>
 <template>
@@ -103,7 +150,23 @@ function handleCurrentChange () {
               {{ typeDict[scope.row.type] }}
             </template>
           </el-table-column>
-          <el-table-column prop="carNum" label="所属车牌" width="180">
+          <el-table-column prop="carNum" label="现所属车牌" width="180">
+          </el-table-column>
+          <el-table-column prop="originalCarNum" label="原所属车牌" width="180">
+          </el-table-column>
+          <el-table-column label="租借状态" width="180">
+            <template v-slot="scope">
+              <template v-if="scope.row.isRent == 0">未租借</template>
+              <template v-else>租借中</template>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="180">
+            <template v-slot="scope">
+              <template v-if="scope.row.isRent == 1">
+                <el-button type="warning" size="small" @click="getBack(scope.row.id)">收回</el-button>
+              </template>
+              <el-button type="warning" size="small" @click="openRentDialog(scope.row)">租借</el-button>
+            </template>
           </el-table-column>
         </el-table>
       </div>
@@ -113,6 +176,24 @@ function handleCurrentChange () {
         @current-change="handleCurrentChange" />
     </div>
   </div>
+
+
+  <el-dialog v-model="rentDialog" title="租借" width="600">
+    <el-form :model="parkForm" label-position="top" style="padding: 0 40px;">
+      <el-form-item label="租借车牌号" label-width="180" style="margin: 0 auto">
+        <CarNumKeyboard @sendCarNum="getCarNum" :key="datetime" ref="child" style="width:520px;margin: 0 0;" />
+      </el-form-item>
+
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="rentDialog = false">取消</el-button>
+        <el-button type="primary" @click="rent">
+          租借
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 

@@ -3,7 +3,8 @@ import { reactive, ref } from "@vue/reactivity";
 import { ElMessage } from 'element-plus'
 import { useRouter } from "vue-router";
 import { Search } from '@element-plus/icons-vue'
-import { get, post } from "../../../../tool/http";
+import { del, get, post, put } from "../../../../tool/http";
+import CarNumKeyboard from "../../../../components/CarNumKeyboard.vue";
 //路由
 const route = useRouter()
 
@@ -55,11 +56,23 @@ const addForm = reactive({
   type: null,
   num: null
 })
+
+const updateForm = reactive({
+  id: null,
+  type: null,
+  num: null
+})
 const openForm = ref(false)
 function add () {
+  addForm.num = ''
+  addForm.type = ''
   openForm.value = true
 }
 function saveCarNum () {
+  if (!child.value.checkInputFinshed()) {
+    return
+  }
+  datetime.value = new Date().getTime()
   post('/carNum/front/insert', addForm).then(res => {
     if (res.code == 200) {
       ElMessage.success("添加成功")
@@ -81,11 +94,48 @@ function remove (value) {
       ElMessage.error(res.msg)
       route.push("/")
     } else {
-      ElMessage.error(res.msg)
+      ElMessage.success("删除成功")
+      getPage()
     }
   })
 }
 
+const child = ref()
+const datetime = ref(new Date().getTime())
+const updateDatetime = ref(new Date().getTime())
+
+function getCarNum (data) {
+  addForm.num = data
+}
+
+
+// 编辑
+const openUpdateForm = ref(false)
+function openUpdate (row) {
+  updateForm.id = row.id
+  updateForm.num = row.num
+  updateForm.type = row.type
+  datetime.value = new Date().getTime()
+  openUpdateForm.value = true
+}
+function getUpdateCarNum (data) {
+  updateForm.num = data
+}
+
+function updateCarNum () {
+  if (!child.value.checkInputFinshed()) {
+    return
+  }
+  put('/carNum/front/update', updateForm).then(res => {
+    if (res.code == 200) {
+      ElMessage.success("修改成功")
+      getPage()
+      openUpdateForm.value = false
+    } else {
+      ElMessage.error(res.msg)
+    }
+  })
+}
 </script>
 <template>
   <div class="all-c">
@@ -134,15 +184,16 @@ function remove (value) {
     </div>
 
 
-    <el-dialog v-model="openForm" title="添加车牌号" width="600">
-      <el-form-item label="车牌类型" label-width="180" required>
-        <el-select v-model="addForm.type" placeholder=" " style="width: 225px;">
+    <el-dialog v-model="openForm" title="添加车牌号" width="700">
+      <el-form-item required>
+        <el-select v-model="addForm.type" placeholder="请选择车牌类型" style="margin: 0 auto;width: 70%;">
           <el-option label="机动车" value="1" />
           <el-option label="二轮车" value="2" />
         </el-select>
       </el-form-item>
-      <el-form-item label="车牌号" label-width="180">
-        <el-input autocomplete="off" style="width: 225px;" v-model="addForm.num" />
+      <el-form-item required>
+        <!-- <el-input autocomplete="off" style="width: 225px;" v-model="addForm.num" /> -->
+        <CarNumKeyboard @sendCarNum="getCarNum" :key="datetime" ref="child" style="width: 70%; " />
       </el-form-item>
       <template #footer>
         <span class="dialog-footer">
@@ -155,15 +206,15 @@ function remove (value) {
     </el-dialog>
 
 
-    <el-dialog v-model="openUpdateForm" title="添加车牌号" width="600">
-      <el-form-item label="车牌类型" label-width="180" required>
-        <el-select v-model="updateForm.type" placeholder=" " style="width: 225px;">
-          <el-option label="机动车" value="1" />
-          <el-option label="二轮车" value="2" />
+    <el-dialog v-model="openUpdateForm" title="编辑车牌号" width="700">
+      <el-form-item>
+        <el-select v-model="updateForm.type" placeholder=" " style="margin: 0 auto;width: 70%;">
+          <el-option label="机动车" :value="1" />
+          <el-option label="二轮车" :value="2" />
         </el-select>
       </el-form-item>
-      <el-form-item label="车牌号" label-width="180">
-        <el-input autocomplete="off" style="width: 225px;" v-model="updateForm.num" />
+      <el-form-item>
+        <CarNumKeyboard @sendCarNum="getUpdateCarNum" :key="updateDatetime" ref="child" style="width: 70%; " />
       </el-form-item>
       <template #footer>
         <span class="dialog-footer">

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.edu.lnu.parking.mapper.CardMapper">
+    <select id="getPage" resultType="cn.edu.lnu.parking.entity.CardVo">
+        SELECT b.*, a.type as carType
+        FROM t_car_num a
+                 JOIN t_card b on a.num = b.car_num
+        <where>
+            and a.user_id = #{vo.userId}
+            AND b.end_time > NOW()
+            <if test="vo.carNum != null and vo.carNum !='' ">
+                AND b.car_num like concat('%',#{vo.carNum},'%')
+            </if>
+            <if test="vo.carType != null">
+                AND a.type = #{vo.carType}
+            </if>
+        </where>
+
+    </select>
+</mapper>

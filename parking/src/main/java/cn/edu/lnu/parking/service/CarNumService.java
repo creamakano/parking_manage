@@ -17,4 +17,10 @@ public interface CarNumService extends IService<CarNum> {
     List<String> getNumList(Integer userId);
 
     Result ListWithoutBuy(CarNum carNum);
+
+    boolean existCarNum(String carNum, Integer userId);
+
+    CarNum getCarNumDetail(String num, Integer userId);
+
+    Result updateCarNum(CarNum carNum);
 }

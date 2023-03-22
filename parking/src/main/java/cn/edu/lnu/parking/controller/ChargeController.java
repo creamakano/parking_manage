@@ -54,6 +54,14 @@ public class ChargeController {
     public Result stop(@PathVariable("id") Integer id){
         return chargeService.stop(id);
     }
+    @PostMapping("/front/stop/{id}")
+    public Result stop(@PathVariable("id") Integer id,HttpSession session){
+        User user = (User) session.getAttribute("LoginUser");
+        if(user == null){
+            return Result.unauthorized();
+        }
+        return chargeService.stop(id,user.getId());
+    }
 
     @GetMapping("/front/page")
     public Result frontPage(ChargeVo vo, HttpSession session){

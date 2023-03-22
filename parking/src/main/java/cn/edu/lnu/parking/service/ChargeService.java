@@ -18,4 +18,6 @@ public interface ChargeService extends IService<Charge> {
     Result stop(Integer id);
 
     Result getFrontPage(ChargeVo vo, Integer userId);
+
+    Result stop(Integer id, Integer userId);
 }

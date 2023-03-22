@@ -8,7 +8,7 @@ const store = useStore()
 const form = reactive({
   name: '',
   password: '123',
-  phone:'15975230881'
+  phone: '18320982069'
 })
 const ruleForm = reactive({
   password: '',

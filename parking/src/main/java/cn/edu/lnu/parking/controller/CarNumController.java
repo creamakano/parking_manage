@@ -66,6 +66,14 @@ public class CarNumController {
         carNum.setUserId(user.getId());
         return Result.success(carNumService.save(carNum));
     }
+    @PutMapping("/front/update")
+    public Result frontUpdate(@RequestBody CarNum carNum, HttpSession session){
+        User user = (User) session.getAttribute("LoginUser");
+        if(user == null){
+            return Result.unauthorized();
+        }
+        return carNumService.updateCarNum(carNum);
+    }
     @GetMapping("/front/list")
     public Result frontList(HttpSession session,CarNum carNum){
         User user = (User) session.getAttribute("LoginUser");

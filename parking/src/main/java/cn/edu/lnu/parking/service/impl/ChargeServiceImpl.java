@@ -95,7 +95,7 @@ public class ChargeServiceImpl extends ServiceImpl<ChargeMapper, Charge> impleme
             return Result.error("参数错误，请正确填写");
         }
         LambdaQueryWrapper<Charge> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Charge::getCarNum,charge.getCarNum());
+        wrapper.eq(Charge::getCarNum,charge.getNum());
         if(ObjectUtils.isNotEmpty(this.list(wrapper))){
             return Result.error("该车充电中");
         }
@@ -164,15 +164,42 @@ public class ChargeServiceImpl extends ServiceImpl<ChargeMapper, Charge> impleme
     @Override
     public Result getFrontPage(ChargeVo vo, Integer userId) {
         LambdaQueryWrapper<Charge> wrapper = new LambdaQueryWrapper<>();
-        //获取车牌
-        List<String> numList = carNumService.getNumList(userId);
         this.buildCondition(vo,wrapper);
-        if(ObjectUtils.isNotEmpty(numList)){
-            wrapper.and(wr -> wr.or().eq(Charge::getStatus,0).or().in(Charge::getCarNum,numList));
-        }else {
-            wrapper.eq(Charge::getStatus,0);
-        }
         IPage<Charge> page = this.page(new Page<>(vo.getPageNo(), vo.getPageSize()),wrapper);
         return Result.success(page);
+    }
+
+    @Override
+    public Result stop(Integer id, Integer userId) {
+        Charge charge = this.getById(id);
+        Long hour = Long.valueOf(charge.getChargeTime().substring(0, 2));
+        Long min = Long.valueOf(charge.getChargeTime().substring(3, 5));
+        Date now = new Date();
+        Date endTime = new Date(charge.getStartTime().getTime() + hour * 60 * 60 * 1000 + min * 60 * 1000);
+        if (now.getTime() < endTime.getTime()) {
+            endTime = now;
+        }
+        ChargeLog log = new ChargeLog();
+        log.setStartTime(charge.getStartTime());
+        log.setCarNum(charge.getCarNum());
+        log.setCode(charge.getCode());
+        log.setEndTime(endTime);
+        log.setCarNum(charge.getCarNum());
+        log.setType(charge.getType());
+        log.setCost(getPrice(log));
+        logService.save(log);
+        baseMapper.stopCharge(id);
+        Order order = new Order();
+        order.setOut_trade_no(OrderUtil.getOrderNum());
+        order.setSubject("充电收费");
+        order.setTotal_amount(String.valueOf(log.getCost()));
+        order.setReturnUrl("/front/home/charge");
+        //获取车辆主人
+        User user = userService.getById(userId);
+        int point = user.getPoint() + (int) (double) log.getCost();
+        user.setLevel(paymentService.getLevel(point));
+        user.setPoint(point);
+        userService.updateById(user);
+        return paymentService.toAlipay(order);
     }
 }

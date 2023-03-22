@@ -1,9 +1,11 @@
 <script setup>
-import { reactive, ref } from "@vue/reactivity";
+import { reactive, ref } from "vue";
 import { Search, Plus } from '@element-plus/icons-vue'
 import { get, post, del } from "../../../../tool/http";
 import { ElMessage } from 'element-plus'
 import { useRouter } from "vue-router";
+import CarNumKeyboard from "../../../../components/CarNumKeyboard.vue";
+
 const route = useRouter()
 //字典
 const areaMap = reactive({})
@@ -23,24 +25,7 @@ get('/area/list').then(res => {
     areaMap[element.id] = element.name
   });
 })
-//车牌
-const numList = ref()
-function getNum (type) {
-  get("/carNum/front/listWithoutBuy", {
-    type: type
-  }).then(res => {
-    if (res.code == 200) {
-      numList.value = res.data
-      openParkForm.value = true
 
-    } else if (res.code == 401) {
-      ElMessage.error(res.msg)
-      route.push("/")
-    } else {
-      ElMessage.error(res.msg)
-    }
-  })
-}
 const form = reactive({
   type: null,
   areaId: null,
@@ -68,14 +53,14 @@ getPage()
 const parkForm = ref()
 const openParkForm = ref(false)
 function toOpenParkForm (row) {
+  datetime.value = new Date().getTime()
   parkForm.value = row
-  getNum(parkForm.value.type)
-
+  openParkForm.value = true
 }
 
 function buy () {
   console.log(parkForm.value);
-  post('/parking/buy',parkForm.value).then(res => {
+  post('/parking/buy', parkForm.value).then(res => {
     if (res.code == 200) {
       document.querySelector('body').innerHTML = res.data
       document.forms[0].submit()
@@ -114,19 +99,27 @@ function handleSizeChange () {
 function handleCurrentChange () {
   getPage()
 }
+
+//获取购买dialog的车牌号
+
+const child = ref()
+const datetime = ref(new Date().getTime())
+function getCarNum (data) {
+  parkForm.value.num = data
+}
 </script>
 <template>
   <div class="all-c">
-    <h1>购买车位</h1>
-    <el-divider />
-    <div class="contain-c">
+  <h1>购买车位</h1>
+  <el-divider />
+  <div class="contain-c">
 
-      <el-form :inline="true" :model="form" class="demo-form-inline">
+    <el-form :inline="true" :model="form" class="demo-form-inline">
 
-        <el-form-item label="车位类型">
-          <el-select v-model="form.type" clearable class="query-item" size="small" placeholder=" ">
-            <el-option label="机动车" value="1" />
-            <el-option label="二轮车" value="2" />
+      <el-form-item label="车位类型">
+        <el-select v-model="form.type" clearable class="query-item" size="small" placeholder=" ">
+          <el-option label="机动车" value="1" />
+          <el-option label="二轮车" value="2" />
           </el-select>
         </el-form-item>
         <el-form-item label="车位编号">
@@ -182,19 +175,16 @@ function handleCurrentChange () {
     <el-dialog v-model="openParkForm" title="购买" width="600">
       <el-form :model="parkForm">
         <el-form-item label="区域" label-width="180">
-          <el-input autocomplete="off" style="width: 225px;" v-model="areaMap[parkForm.areaId]" disabled />
+          <el-input autocomplete="off" style="width: 260px;" v-model="areaMap[parkForm.areaId]" disabled />
         </el-form-item>
         <el-form-item label="车位编号" label-width="180">
-          <el-input autocomplete="off" style="width: 225px;" v-model="parkForm.code" disabled />
+          <el-input autocomplete="off" style="width: 260px;" v-model="parkForm.code" disabled />
         </el-form-item>
         <el-form-item label="车位类型" label-width="180">
-          <el-input autocomplete="off" style="width: 225px;" v-model="typeDict[parkForm.type]" disabled />
+          <el-input autocomplete="off" style="width: 260px;" v-model="typeDict[parkForm.type]" disabled />
         </el-form-item>
-        <el-form-item label="所停车辆" label-width="180">
-          <el-select v-model="parkForm.num" placeholder=" ">
-            <el-option v-for="item in numList" :key="item.id" :label="item.num" :value="item.num" style="width: 225px;" />
-          </el-select>
-
+        <el-form-item>
+          <CarNumKeyboard @sendCarNum="getCarNum" :key="datetime" ref="child" style="width:360px" />
         </el-form-item>
 
       </el-form>
@@ -202,44 +192,44 @@ function handleCurrentChange () {
         <span class="dialog-footer">
           <el-button @click="cancel">取消</el-button>
           <el-button type="primary" @click="buy">
-            购买  
+            购买
           </el-button>
         </span>
       </template>
     </el-dialog>
     <!-- 
-        <el-dialog v-model="openAdd" title="新增车位" width="600">
-          <el-form :model="addForm">
-            <el-form-item label="区域" label-width="180" required>
-              <el-select v-model="addForm.areaId" placeholder=" ">
-                <el-option v-for="item in area" :key="item.id" :label="item.name" :value="item.id" style="width: 225px;" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="车位编号" label-width="180" required>
-              <el-input v-model="addForm.code" autocomplete="off" style="width: 225px;" />
-            </el-form-item>
-            <el-form-item label="车位类型" label-width="180" required>
-              <el-select v-model="addForm.type" placeholder=" " style="width: 225px;">
-                <el-option label="机动车" value="1" />
-                <el-option label="二轮车" value="2" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="是否私人" label-width="180" required>
-              <el-select v-model="addForm.isPrivate" placeholder=" " style="width: 225px;">
-                <el-option label="否" value="0" />
-                <el-option label="是" value="1" />
-              </el-select>
-            </el-form-item>
-          </el-form>
-          <template #footer>
-            <span class="dialog-footer">
-              <el-button @click="openAdd = false">取消</el-button>
-              <el-button type="primary" @click="submitAdd">
-                确定
-              </el-button>
-            </span>
-          </template>
-        </el-dialog> -->
+                  <el-dialog v-model="openAdd" title="新增车位" width="600">
+                    <el-form :model="addForm">
+                      <el-form-item label="区域" label-width="180" required>
+                        <el-select v-model="addForm.areaId" placeholder=" ">
+                          <el-option v-for="item in area" :key="item.id" :label="item.name" :value="item.id" style="width: 225px;" />
+                        </el-select>
+                      </el-form-item>
+                      <el-form-item label="车位编号" label-width="180" required>
+                        <el-input v-model="addForm.code" autocomplete="off" style="width: 225px;" />
+                      </el-form-item>
+                      <el-form-item label="车位类型" label-width="180" required>
+                        <el-select v-model="addForm.type" placeholder=" " style="width: 225px;">
+                          <el-option label="机动车" value="1" />
+                          <el-option label="二轮车" value="2" />
+                        </el-select>
+                      </el-form-item>
+                      <el-form-item label="是否私人" label-width="180" required>
+                        <el-select v-model="addForm.isPrivate" placeholder=" " style="width: 225px;">
+                          <el-option label="否" value="0" />
+                          <el-option label="是" value="1" />
+                        </el-select>
+                      </el-form-item>
+                    </el-form>
+                    <template #footer>
+                      <span class="dialog-footer">
+                        <el-button @click="openAdd = false">取消</el-button>
+                        <el-button type="primary" @click="submitAdd">
+                          确定
+                        </el-button>
+                      </span>
+                    </template>
+                  </el-dialog> -->
   </div>
 </template>
 

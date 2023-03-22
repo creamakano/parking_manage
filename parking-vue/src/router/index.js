@@ -86,11 +86,11 @@ const router = createRouter({
         },
         {
           path: "parking",
-          component: () => import('../views/reception/parking/index.vue')
+          component: () => import('../views/reception/parking/carNum/index.vue')
         },
         {
           path: "",
-          component: () => import('../views/reception/parking/index.vue')
+          component: () => import('../views/reception/parking/carNum/index.vue')
         },
         {
           path: "charge",
@@ -107,6 +107,18 @@ const router = createRouter({
         {
           path: "baseInfo",
           component: () => import('../views/reception/myInfo/baseInfo/index.vue')
+        },
+        {
+          path: "publicPlace",
+          component: () => import('../views/reception/parking/publicPlace/index.vue')
+        },
+        {
+          path: "buyCard",
+          component: () => import('../views/reception/myInfo/buyCard/index.vue')
+        },
+        {
+          path: "myCard",
+          component: () => import('../views/reception/myInfo/myCard/index.vue')
         },
       ]
     }

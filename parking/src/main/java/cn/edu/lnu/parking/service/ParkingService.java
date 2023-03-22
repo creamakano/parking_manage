@@ -1,5 +1,7 @@
 package cn.edu.lnu.parking.service;
 
+import cn.edu.lnu.parking.entity.CarNum;
+import cn.edu.lnu.parking.entity.CarNumPlaceRelVo;
 import cn.edu.lnu.parking.entity.Parking;
 import cn.edu.lnu.parking.entity.ParkingVo;
 import cn.edu.lnu.parking.util.Result;
@@ -26,5 +28,11 @@ public interface ParkingService extends IService<Parking> {
 
     Result buy(Integer id, String num, Integer userId);
 
-    Result myPlace(ParkingVo vo, Integer id);
+    Result parkByCarNum(CarNum carNum);
+
+    Result frontPickUp(Parking parking);
+
+    Result myPlace(CarNumPlaceRelVo vo);
+
+    Parking getByCarNum(String carNum);
 }

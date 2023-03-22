@@ -1,12 +1,11 @@
 package cn.edu.lnu.parking.controller;
 
-import cn.edu.lnu.parking.entity.Parking;
-import cn.edu.lnu.parking.entity.ParkingVo;
-import cn.edu.lnu.parking.entity.User;
+import cn.edu.lnu.parking.entity.*;
 import cn.edu.lnu.parking.service.ParkingService;
 import cn.edu.lnu.parking.util.Result;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -22,6 +21,7 @@ import javax.servlet.http.HttpSession;
 public class ParkingController {
 
     @Autowired
+    @Lazy
     private ParkingService parkingService;
 
     /**
@@ -86,13 +86,40 @@ public class ParkingController {
      */
     @PostMapping("/pickUp/{id}")
     public Result pickUp(@PathVariable("id") Integer id,@RequestBody Parking parking,HttpSession session){
-        if(parking.getUserId()==null){
-            User user = (User) session.getAttribute("LoginUser");
-            if(user != null){
-                parking.setUserId(user.getId());
-            }
-        }
         return parkingService.pickUp(id,parking);
+    }
+    /**
+     * 前台取车
+     */
+    @PostMapping("/front/pickUp")
+    public Result frontPickUp(@RequestBody Parking parking,HttpSession session){
+        User user = (User) session.getAttribute("LoginUser");
+        if(user == null){
+            return Result.unauthorized();
+        }
+        String returnUrl = parking.getReturnUrl();
+        parking = parkingService.getById(parking.getId());
+        parking.setReturnUrl(returnUrl);
+        parking.setUserId(user.getId());
+        return parkingService.frontPickUp(parking);
+    }
+    /**
+     * 前台根据车牌号取车
+     */
+    @PostMapping("/front/pickUpByCarNum")
+    public Result pickUpByCarNum(@RequestBody Parking parking,HttpSession session){
+        User user = (User) session.getAttribute("LoginUser");
+        if(user == null){
+            return Result.unauthorized();
+        }
+        String returnUrl = parking.getReturnUrl();
+        parking = parkingService.getByCarNum(parking.getNum());
+        parking.setReturnUrl(returnUrl);
+        if(parking == null){
+            return Result.error("查无该车");
+        }
+        parking.setUserId(user.getId());
+        return parkingService.frontPickUp(parking);
     }
 
 
@@ -124,11 +151,25 @@ public class ParkingController {
     }
 
     @RequestMapping("/front/myPlace")
-    public Result myPlace(ParkingVo vo, HttpSession session) {
+    public Result myPlace(CarNumPlaceRelVo vo, HttpSession session) {
         User user = (User) session.getAttribute("LoginUser");
         if(user == null){
             return Result.unauthorized();
         }
-        return parkingService.myPlace(vo,user.getId());
+        vo.setUserId(user.getId());
+        return parkingService.myPlace(vo);
+    }
+
+    /**
+     * 前台首页，根据车牌号停车
+     */
+    @PostMapping("/front/parkByCarNum")
+    public Result parkByCarNum(@RequestBody CarNum carNum, HttpSession session) {
+        User user = (User) session.getAttribute("LoginUser");
+        if(user == null){
+            return Result.unauthorized();
+        }
+        carNum.setUserId(user.getId());
+        return parkingService.parkByCarNum(carNum);
     }
 }

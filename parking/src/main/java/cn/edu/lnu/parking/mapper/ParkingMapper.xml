@@ -21,4 +21,11 @@
         GROUP BY
             a.`name`
     </select>
+    <select id="getPage" resultType="cn.edu.lnu.parking.entity.CarNumPlaceRelVo">
+        SELECT a.* , b.code , b.type , b.area_id FROM t_car_num_place_rel a
+        LEFT JOIN t_parking b on a.parking_id = b.id
+        <where>
+            and a.user_id = #{vo.userId}
+        </where>
+    </select>
 </mapper>
