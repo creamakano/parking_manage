@@ -3,7 +3,7 @@ import { reactive, ref } from "@vue/reactivity";
 import { Search, Plus } from '@element-plus/icons-vue'
 import { get, post, del } from "../../../../tool/http";
 import { ElMessage } from 'element-plus'
-
+import CarNumKeyboard from "../../../../components/CarNumKeyboard.vue";
 //字典
 const areaMap = reactive({})
 const typeDict = reactive({
@@ -89,18 +89,32 @@ function handleCurrentChange () {
   getPage()
 }
 
+
+//获取充电dialog的车牌号
+
+const child = ref()
+const datetime = ref(new Date().getTime())
+function getCarNum (data) {
+  parkForm.value.num = data
+}
+
 //充电，断电
 const openParkForm = ref(false)
 const parkForm = ref({})
 function start (row) {
-  console.log(row
-  );
+  datetime.value = new Date().getTime()
   parkForm.value = row
   openParkForm.value = true
 
 }
 function parkAction () {
-  // console.log(parkForm);
+  if (!child.value.checkInputFinshed()) {
+    return
+  }
+  if (!parkForm.value.chargeTime) {
+    ElMessage.error('请选择充电时间')
+    return
+  }
   post('/charge/start', parkForm.value).then(res => {
     if (res.code == 200) {
       ElMessage.success("停车成功")
@@ -216,17 +230,18 @@ function stop (id) {
     <el-dialog v-model="openParkForm" title="充电" width="600">
       <el-form :model="parkForm">
         <el-form-item label="车位编号" label-width="180">
-          <el-input autocomplete="off" style="width: 225px;" v-model="parkForm.code" disabled />
+          <el-input autocomplete="off" style="width: 265px;" v-model="parkForm.code" disabled />
         </el-form-item>
         <el-form-item label="车位类型" label-width="180">
-          <el-input autocomplete="off" style="width: 225px;" v-model="typeDict[parkForm.type]" disabled />
-        </el-form-item>
-        <el-form-item label="所停车辆" label-width="180">
-          <el-input autocomplete="off" style="width: 225px;" v-model="parkForm.num" />
+          <el-input autocomplete="off" style="width: 265px;" v-model="typeDict[parkForm.type]" disabled />
         </el-form-item>
         <el-form-item label="充电时间" label-width="180">
           <el-time-select v-model="parkForm.chargeTime" start="00:15" step="00:15" end="12:00" placeholder=" "
-            style="width: 225px;" />
+            style="width: 265px;" />
+
+        </el-form-item>
+        <el-form-item>
+          <CarNumKeyboard @sendCarNum="getCarNum" :key="datetime" ref="child" style="width:360px" />
         </el-form-item>
       </el-form>
       <template #footer>

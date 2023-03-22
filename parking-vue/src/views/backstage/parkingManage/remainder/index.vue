@@ -1,9 +1,10 @@
 <script setup>
 // 余位信息管理页面
-
-import { ref, computed, onMounted } from "vue";
+import CarNumKeyboard from "../../../../components/CarNumKeyboard.vue";
+import { ref, computed, onMounted, reactive } from "vue";
 import { useRouter } from "vue-router";
-import { get } from "../../../../tool/http";
+import { get, post } from "../../../../tool/http";
+import { ElMessage } from "element-plus";
 const route = useRouter()
 
 
@@ -12,18 +13,91 @@ const route = useRouter()
 const data = ref()
 const cartTotal = ref(0)
 const motorcycleTotal = ref(0)
-get('/parking/getRemainder').then(res => {
-  data.value = res.data
-  for (let i = 0; i < data.value.length; i++) {
-    cartTotal.value = cartTotal.value + data.value[i].car
-    motorcycleTotal.value = motorcycleTotal.value + data.value[i].motorcycle
+function getInfo () {
+  get('/parking/getRemainder').then(res => {
+    data.value = res.data
+    for (let i = 0; i < data.value.length; i++) {
+      cartTotal.value = cartTotal.value + data.value[i].car
+      motorcycleTotal.value = motorcycleTotal.value + data.value[i].motorcycle
+    }
+  })
+}
+getInfo()
+const type = ref(1)
+function openParkForm (value) {
+  type.value = value
+  if (type.value == 1) {
+    title.value = '停车'
+  } else {
+    title.value = '取车'
   }
-})
+  datetime.value = new Date().getTime()
+  openForm.value = true
 
-function toParking () {
-  route.push('/back/home/parking')
+}
+const openForm = ref(false)
+const title = ref('停车')
+const child = ref()
+const datetime = ref(new Date().getTime())
+const form = reactive({
+  num: '',
+  type: ''
+})
+function getCarNum (data) {
+  form.num = data
+}
+function parkAction(){
+  if (type.value == 1) {
+    park()
+  } else {
+    pickup()
+  }
+}
+function park () {
+  if (!form.type) {
+    ElMessage.error('请选择车辆类型')
+    return
+  }
+  if (!child.value.checkInputFinshed()) {
+    return
+  }
+  post('/parking/front/parkByCarNum', form).then(res => {
+    if (res.code == 401) {
+      ElMessage.error(res.msg)
+      router.push('/')
+    } else if (res.code == 200) {
+      ElMessage.success("停车成功")
+      getInfo()
+      openForm.value = false
+    } else {
+      ElMessage.error(res.msg)
+    }
+  })
+
 }
 
+
+function pickup () {
+  if (!child.value.checkInputFinshed()) {
+    return
+  }
+  post('/parking/back/pickUpByCarNum', {
+    num:form.num,
+    returnUrl: '/back/home'
+  }).then(res => {
+    if (res.code == 200) {
+      document.querySelector('body').innerHTML = res.data
+      document.forms[0].submit()
+    }
+    else if (res.code == 201) {
+      ElMessage.success(res.msg)
+      getInfo()
+      openForm.value = false
+    } else {
+      ElMessage.error(res.msg)
+    }
+  })
+}
 
 </script>
 <template>
@@ -35,17 +109,8 @@ function toParking () {
     <el-divider />
 
     <div class="btn">
-      <el-button type="primary" @click="toParking">停车</el-button>
-      <el-button type="primary" @click="toParking">取车</el-button>
-      <!-- <el-select v-model="value" class="m-2" placeholder="Select" size="large">
-          <el-option v-for="item in statusList" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select> -->
-      <!-- <el-input v-model="input" placeholder="Please input" clearable />
-        <el-form :model="form" label-width="120px">
-          <el-form-item label="">
-            <el-input v-model="form.name" />
-          </el-form-item>
-        </el-form> -->
+      <el-button type="primary" @click="openParkForm(1)">停车</el-button>
+      <el-button type="primary" @click="openParkForm(2)">取车</el-button>
     </div>
     <div class="contain-c">
       <el-table :data="data" style="width: 540px" :cell-style="{ textAlign: 'center' }" stripe
@@ -56,6 +121,26 @@ function toParking () {
       </el-table>
     </div>
   </div>
+
+  <el-dialog v-model="openForm" :title="title" width="700">
+    <el-form-item required v-if="type == 1">
+      <el-select v-model="form.type" placeholder="请选择车辆类型" style="width: 70%;margin: 0 auto;" clearable>
+        <el-option label="机动车" :value="1" />
+        <el-option label="二轮车" :value="2" />
+      </el-select>
+    </el-form-item>
+    <el-form-item required>
+      <CarNumKeyboard @sendCarNum="getCarNum" :key="datetime" ref="child" style="width: 70%; " />
+    </el-form-item>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="openForm = false">取消</el-button>
+        <el-button type="primary" @click="parkAction">
+          确定
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <style scoped>

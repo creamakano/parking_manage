@@ -51,8 +51,21 @@ function remove (value) {
     getPage()
   })
 }
-function openUpdate (value) {
-  console.log(value);
+
+const updateForm = reactive({
+  id: '',
+  areaId: '',
+  code: '',
+  type: 0
+})
+const openUpdateModel = ref(false)
+function openUpdate (row) {
+  updateForm.id = row.id
+  updateForm.areaId = row.areaId
+  updateForm.code = row.code
+  updateForm.type = Number(row.type)
+  console.log(updateForm.type);
+  openUpdateModel.value = true
 }
 
 function queryPage () {
@@ -84,6 +97,18 @@ function submitAdd () {
       ElMessage.success('添加成功')
       getPage()
       openAdd.value = false
+    } else {
+      ElMessage.error(res.msg)
+    }
+  })
+}
+
+function submitUpdate () {
+  post('/parking/update', updateForm).then((res) => {
+    if (res.code == 200) {
+      ElMessage.success('添加成功')
+      getPage()
+      openUpdateModel.value = false
     } else {
       ElMessage.error(res.msg)
     }
@@ -184,17 +209,43 @@ function handleCurrentChange () {
             <el-option label="二轮车" value="2" />
           </el-select>
         </el-form-item>
-        <el-form-item label="是否私人" label-width="180" required>
-          <el-select v-model="addForm.isPrivate" placeholder=" " style="width: 225px;">
-            <el-option label="否" value="0" />
-            <el-option label="是" value="1" />
-          </el-select>
-        </el-form-item>
+        <!-- <el-form-item label="是否私人" label-width="180" required>
+                      <el-select v-model="addForm.isPrivate" placeholder=" " style="width: 225px;">
+                        <el-option label="否" value="0" />
+                        <el-option label="是" value="1" />
+                      </el-select>
+                    </el-form-item> -->
       </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="openAdd = false">取消</el-button>
           <el-button type="primary" @click="submitAdd">
+            确定
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
+    <el-dialog v-model="openUpdateModel" title="修改车位信息" width="600">
+      <el-form :model="updateForm">
+        <el-form-item label="区域" label-width="180" required>
+          <el-select v-model="updateForm.areaId" placeholder=" ">
+            <el-option v-for="item in area" :key="item.id" :label="item.name" :value="item.id" style="width: 225px;" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="车位编号" label-width="180" required>
+          <el-input v-model="updateForm.code" autocomplete="off" style="width: 225px;" />
+        </el-form-item>
+        <el-form-item label="车位类型" label-width="180" required>
+          <el-select v-model="updateForm.type" placeholder=" " style="width: 225px;">
+            <el-option label="机动车" :value="1" />
+            <el-option label="二轮车" :value="2" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="openUpdateModel = false">取消</el-button>
+          <el-button type="primary" @click="submitUpdate">
             确定
           </el-button>
         </span>

@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref } from "@vue/reactivity";
 import { ElMessage } from 'element-plus'
-
+import CarNumKeyboard from "../../../../components/CarNumKeyboard.vue";
 import { Search } from '@element-plus/icons-vue'
 import { get, post } from "../../../../tool/http";
 //字典
@@ -11,7 +11,7 @@ const typeDict = reactive({
   2: '二轮车'
 })
 const isPrivateDict = reactive({
-  1: '私有车位',
+  1: '私人车位',
   0: '公共车位'
 })
 const statusDict = reactive({
@@ -38,8 +38,7 @@ const form = reactive({
   carNum: null,
   area: null,
   pageNo: 1,
-  pageSize: 10,
-  isPrivate: 0
+  pageSize: 10
 
 })
 //页面数据
@@ -70,13 +69,14 @@ const openParkForm = ref(false)
 const parkForm = ref({})
 function park (row) {
   parkForm.value = row
-  console.log(parkForm.areaId);
-
+  datetime.value = new Date().getTime()
   openParkForm.value = true
 
 }
 function parkAction () {
-  console.log(parkForm.value);
+  if (!child.value.checkInputFinshed()) {
+    return
+  }
   post('/parking/park', parkForm.value).then(res => {
     if (res.code == 200) {
       ElMessage.success(res.msg)
@@ -95,13 +95,21 @@ function pickUp (id) {
     if (res.code == 200) {
       document.querySelector('body').innerHTML = res.data
       document.forms[0].submit()
-    }else if (res.code == 201) {
+    } else if (res.code == 201) {
       ElMessage.success(res.msg)
       getPage()
-    }else {
+    } else {
       ElMessage.error(res.msg)
     }
   })
+}
+
+//获取编辑dialog的车牌号
+
+const child = ref()
+const datetime = ref(new Date().getTime())
+function getCarNum (data) {
+  parkForm.value.num = data
 }
 </script>
 <template>
@@ -120,6 +128,12 @@ function pickUp (id) {
           <el-select v-model="form.status" clearable class="query-item" size="small" placeholder=" ">
             <el-option label="空闲" value="0" />
             <el-option label="停放中" value="1" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="车位信息">
+          <el-select v-model="form.isPrivate" clearable class="query-item" size="small" placeholder=" ">
+            <el-option label="私人车位" value="1" />
+            <el-option label="公共车位" value="0" />
           </el-select>
         </el-form-item>
         <el-form-item label="所停车辆">
@@ -155,6 +169,11 @@ function pickUp (id) {
             {{ typeDict[scope.row.type] }}
           </template>
         </el-table-column>
+        <el-table-column prop="type" label="车位信息" width="180">
+          <template v-slot="scope">
+            {{ isPrivateDict[scope.row.isPrivate] }}
+          </template>
+        </el-table-column>
         <el-table-column prop="carNum" label="所停车辆" width="180" />
         <el-table-column label="操作" width="180">
           <template v-slot="scope">
@@ -170,19 +189,45 @@ function pickUp (id) {
     </div>
 
 
+    <!-- <el-dialog v-model="openParkForm" title="停车" width="600">
+        <el-form :model="parkForm">
+          <el-form-item label="区域" label-width="180">
+            <el-input autocomplete="off" style="width: 225px;" v-model="areaMap[parkForm.areaId]" disabled />
+          </el-form-item>
+          <el-form-item label="车位编号" label-width="180">
+            <el-input autocomplete="off" style="width: 225px;" v-model="parkForm.code" disabled />
+          </el-form-item>
+          <el-form-item label="车位类型" label-width="180">
+            <el-input autocomplete="off" style="width: 225px;" v-model="typeDict[parkForm.type]" disabled />
+          </el-form-item>
+          <el-form-item label="所停车辆" label-width="180">
+            <el-input autocomplete="off" style="width: 225px;" v-model="parkForm.num" />
+          </el-form-item>
+
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="openParkForm = false">取消</el-button>
+            <el-button type="primary" @click="parkAction">
+              停车
+            </el-button>
+          </span>
+        </template>
+      </el-dialog> -->
+
     <el-dialog v-model="openParkForm" title="停车" width="600">
       <el-form :model="parkForm">
         <el-form-item label="区域" label-width="180">
-          <el-input autocomplete="off" style="width: 225px;" v-model="areaMap[parkForm.areaId]" disabled />
+          <el-input autocomplete="off" style="width: 260px;" v-model="areaMap[parkForm.areaId]" disabled />
         </el-form-item>
         <el-form-item label="车位编号" label-width="180">
-          <el-input autocomplete="off" style="width: 225px;" v-model="parkForm.code" disabled />
+          <el-input autocomplete="off" style="width: 260px;" v-model="parkForm.code" disabled />
         </el-form-item>
         <el-form-item label="车位类型" label-width="180">
-          <el-input autocomplete="off" style="width: 225px;" v-model="typeDict[parkForm.type]" disabled />
+          <el-input autocomplete="off" style="width: 260px;" v-model="typeDict[parkForm.type]" disabled />
         </el-form-item>
-        <el-form-item label="所停车辆" label-width="180">
-          <el-input autocomplete="off" style="width: 225px;" v-model="parkForm.num" />
+        <el-form-item>
+          <CarNumKeyboard @sendCarNum="getCarNum" :key="datetime" ref="child" style="width:360px" />
         </el-form-item>
 
       </el-form>
@@ -195,6 +240,7 @@ function pickUp (id) {
         </span>
       </template>
     </el-dialog>
+
 
   </div>
 </template>
@@ -209,7 +255,7 @@ function pickUp (id) {
 }
 
 .data-table {
-  width: 1080px;
+  width: 1260px;
   margin: 0 auto;
 }
 

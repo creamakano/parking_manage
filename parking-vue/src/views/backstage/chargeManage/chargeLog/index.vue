@@ -75,7 +75,7 @@ function handleCurrentChange (val) {
 
 
       <div class="table-form">
-        <el-table :data="data" stripe height="400" :header-cell-style="{ 'text-align': 'center' }"
+        <el-table :data="data" stripe height="450" :header-cell-style="{ 'text-align': 'center' }"
           :cell-style="{ 'text-align': 'center' }">
 
           <el-table-column prop="code" label="车位编号" width="180" />
