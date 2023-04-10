@@ -4,6 +4,7 @@ import { post, get } from '../../../tool/http.js'
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import { ElMessage } from "element-plus";
+import { first } from "lodash";
 const route = useRouter()
 const store = useStore()
 const form = reactive({
@@ -25,13 +26,25 @@ function login () {
     }
   })
 }
-
+const activeName = ref('second')
 function registry () {
-  get('/user/get').then(res => {
-    console.log("sessssss" + res
-    );
+  post('/user/registry', registryForm).then(res => {
+    if (res.code == 200) {
+      ElMessage.success("注册成功")
+
+    } else {
+      ElMessage.error(res.msg)
+    }
+
   })
+  activeName.value = "first"
 }
+
+const registryForm = reactive({
+  phone: '',
+  password: '',
+  confirmPassword: ''
+})
 
 
 const backForm = reactive({
@@ -54,7 +67,7 @@ function backLogin () {
 </script>
 <template>
   <div class="main-c">
-    <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick" model-value="first">
+    <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
       <el-tab-pane label="登录" name="first">
         <el-form :model="form" label-width="120px">
 
@@ -74,16 +87,16 @@ function backLogin () {
       </el-tab-pane>
 
       <el-tab-pane label="注册" name="second">
-        <el-form :model="ruleForm" label-width="120px" :rules="rules" status-icon ref="ruleFormRef" class="demo-ruleForm">
+        <el-form :model="registryForm" label-width="120px" class="demo-ruleForm">
 
           <el-form-item label="手机号码">
-            <el-input v-model="form.phone" />
+            <el-input v-model="registryForm.phone" />
           </el-form-item>
           <el-form-item label="密码">
-            <el-input v-model="form.password" type="password" />
+            <el-input v-model="registryForm.password" type="password" />
           </el-form-item>
           <el-form-item label="确认密码">
-            <el-input v-model="form.checkPass" type="password" />
+            <el-input v-model="registryForm.confirmPassword" type="password" />
 
           </el-form-item>
         </el-form>

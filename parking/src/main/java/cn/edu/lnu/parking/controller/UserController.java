@@ -21,6 +21,11 @@ public class UserController {
         return userService.login(session,user);
     }
 
+    @PostMapping("/registry")
+    public Result registry(@RequestBody User user){
+        return userService.registry(user);
+    }
+
     @PostMapping("/logout")
     public Result logout(HttpSession session){
         session.removeAttribute("LoginUser");

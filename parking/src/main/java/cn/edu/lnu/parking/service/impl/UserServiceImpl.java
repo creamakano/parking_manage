@@ -37,4 +37,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         IPage<User> iPage = this.page(page);
         return Result.success(iPage);
     }
+
+    @Override
+    public Result registry(User user) {
+        if(ObjectUtils.isNull(user.getPhone(),user.getPassword(),user.getConfirmPassword())){
+            return Result.error("请正确填写");
+        }
+        if(!user.getPassword().equals(user.getConfirmPassword())){
+            return Result.error("两次密码输入不相同");
+        }
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getPhone,user.getPhone());
+        if(ObjectUtils.isNotEmpty(this.getOne(wrapper))){
+            return Result.error("该手机号已被注册");
+        }
+        user.setPoint(0);
+        user.setLevel(1);
+        user.setName(user.getPhone());
+        this.save(user);
+        return Result.success();
+    }
 }

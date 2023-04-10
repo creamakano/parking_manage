@@ -11,4 +11,6 @@ public interface UserService  extends IService<User> {
     Result login(HttpSession session, User user);
 
     Result getPage(UserVo vo);
+
+    Result registry(User user);
 }
