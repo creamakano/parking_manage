@@ -13,4 +13,6 @@ public interface EmployeeService extends IService<Employee> {
 
     Result getPage(EmployeeVo vo);
 
+    Result insert(Employee employee);
+
 }

@@ -1,7 +1,7 @@
 <script setup>
 import { ElMessage } from "element-plus";
 import { reactive, ref } from "vue";
-import { del, get, put } from "../../../../tool/http";
+import { del, get, post, put } from "../../../../tool/http";
 
 //字典
 const sex = reactive({
@@ -75,12 +75,41 @@ function deleteUser (id) {
     getPage()
   })
 }
+
+
+//编辑
+const insertDialog = ref(false)
+
+const insertForm = reactive({
+  name: '',
+  code: null,
+  education: '',
+  age: '',
+  position: '',
+  phone: '',
+  sex: '',
+  address: '',
+  birth: '',
+
+})
+
+function insertEmployee () {
+  post('/employee/insert', insertForm).then(res => {
+    if (res.code == 200) {
+      ElMessage.success("新增成功")
+      insertDialog.value = false
+      getPage()
+    } else {
+      ElMessage.error(res.msg)
+    }
+  })
+}
 </script>
 <template>
   <h1>员工信息管理</h1>
   <el-divider />
   <div class="query-line">
-    <el-button type="primary" @click="insertEmployee">新增员工</el-button>
+    <el-button type="primary" @click="insertDialog = true">新增员工</el-button>
   </div>
 
   <el-table :data="userInfo" stripe style="width: 70%;margin: 10px auto; " :cell-style="{ textAlign: 'center' }"
@@ -158,6 +187,57 @@ function deleteUser (id) {
       <span class="dialog-footer">
         <el-button @click="handleClose">取消</el-button>
         <el-button type="primary" @click="updateUserAction">
+          确认
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="insertDialog" title="新增用户信息" width="30%" :before-close="handleClose">
+    <el-form :label-position="right" label-width="100px" :model="updateForm" style="max-width: 460px">
+      <el-form-item label="员工编号">
+        <el-input v-model="insertForm.code" />
+      </el-form-item>
+      <el-form-item label="员工姓名">
+        <el-input v-model="insertForm.name" />
+      </el-form-item>
+      <el-form-item label="登录密码">
+        <el-input v-model="insertForm.password" />
+      </el-form-item>
+      <el-form-item label="手机号码">
+        <el-input v-model="insertForm.phone" />
+      </el-form-item>
+      <el-form-item label="性别">
+        <el-select v-model="insertForm.sex" class="m-2" placeholder="请选择性别">
+          <el-option label="男" :value="0" />
+          <el-option label="女" :value="1" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="生日">
+        <el-date-picker v-model="insertForm.birth" type="date" placeholder=" " value-format="YYYY-MM-DD"
+          format="YYYY-MM-DD" />
+      </el-form-item>
+      <el-form-item label="教育程度">
+        <el-input v-model="insertForm.education" />
+      </el-form-item>
+      <el-form-item label="入职年龄">
+        <el-input v-model="insertForm.age" />
+      </el-form-item>
+      <el-form-item label="地址">
+        <el-input v-model="insertForm.address" />
+      </el-form-item>
+      <el-form-item label="权限">
+        <el-select v-model="insertForm.position" class="m-2" placeholder="请选择权限">
+          <el-option label="普通员工" :value="'0'" />
+          <el-option label="管理员" :value="'1'" />
+        </el-select>
+      </el-form-item>
+
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="insertDialog = false">取消</el-button>
+        <el-button type="primary" @click="insertEmployee">
           确认
         </el-button>
       </span>

@@ -39,7 +39,7 @@ function logout () {
     <el-sub-menu index="/back/home/userInfo">
       <template #title>用户管理</template>
       <el-menu-item index="/back/home/userInfo">用户信息管理</el-menu-item>
-      <el-menu-item index="/back/home/employeeInfo">员工信息管理</el-menu-item>
+      <el-menu-item index="/back/home/employeeInfo" v-if="$store.state.employee.position == 1">员工信息管理</el-menu-item>
     </el-sub-menu>
     <el-menu-item index="#" @click="logout">安全退出</el-menu-item>
 

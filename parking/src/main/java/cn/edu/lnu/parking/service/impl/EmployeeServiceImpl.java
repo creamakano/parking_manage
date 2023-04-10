@@ -42,4 +42,18 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         return Result.success(iPage);
     }
 
+    @Override
+    public Result insert(Employee employee) {
+        if(ObjectUtils.isNull(employee.getCode(),employee.getPassword(),employee.getName(),employee.getPosition())){
+            return Result.error("请正确填写信息");
+        }
+        LambdaQueryWrapper<Employee> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Employee::getCode,employee.getCode());
+        if(ObjectUtils.isNotEmpty(this.getOne(wrapper))){
+            return Result.error("该员工编号已存在");
+        }
+        this.save(employee);
+        return Result.success();
+    }
+
 }

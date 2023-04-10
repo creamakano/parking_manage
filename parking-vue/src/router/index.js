@@ -4,6 +4,7 @@ import BackLoginView from '../views/backstage/login/index.vue'
 import BackHomeView from '../views/backstage/home/index.vue'
 import FrontHomeView from '../views/reception/home/index.vue'
 import PayView from '../views/pay/test.vue'
+import { awaitGet } from '../tool/http.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -124,5 +125,27 @@ const router = createRouter({
     }
   ]
 })
+
+router.beforeEach(async (to, from, next) => {
+  if (to.path == '/back/' ) {
+    if (store.state.employee.position == '') {
+      await awaitGet('/employee/session').then(res => {
+        if (res.code == 200) {
+          store.commit('setEmployee', res.data)
+        } else {
+          ElMessage.error(res.msg)
+          router.push('/')
+        }
+      })
+    }
+    if (to.path == '/back/employeeInfo' && store.state.employee.position != null && store.state.employee.position < 1) {
+      ElMessage.error("权限不足")
+      router.push('/')
+    }
+  }
+
+  next()//需要调用next()才能放行
+})
+
 
 export default router
