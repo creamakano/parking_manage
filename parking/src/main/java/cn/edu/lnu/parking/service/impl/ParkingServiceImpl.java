@@ -31,6 +31,8 @@ public class ParkingServiceImpl extends ServiceImpl<ParkingMapper, Parking> impl
     @Autowired
     private UserService userService;
     @Autowired
+    private CardService cardService;
+    @Autowired
     @Lazy
     private CarNumPlaceRelService relService;
 
@@ -260,6 +262,9 @@ public class ParkingServiceImpl extends ServiceImpl<ParkingMapper, Parking> impl
         baseMapper.pickUp(id);
         if(isPrivateFlag){
             return new Result(201, "取车成功，私人车位，无需缴费");
+        }
+        if(cardService.existCarNum(park.getCarNum())){
+            return new Result(201, "取车成功，优惠有效期内，无需缴费");
         }
         if (log.getCost() > 0) {
             Order order = new Order();

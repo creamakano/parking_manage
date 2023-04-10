@@ -16,4 +16,6 @@ public interface CardService extends IService<Card> {
     Result checkCarNum(CardVo vo);
 
     Result getPage(CardVo vo);
+
+    boolean existCarNum(String carNum);
 }

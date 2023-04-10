@@ -68,4 +68,12 @@ public class CardServiceImpl extends ServiceImpl<CardMapper, Card> implements Ca
         IPage<CardVo> iPage =  baseMapper.getPage(page,vo);
         return Result.success(iPage);
     }
+
+    @Override
+    public boolean existCarNum(String carNum) {
+        LambdaQueryWrapper<Card> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Card::getCarNum,carNum);
+        wrapper.ge(Card::getEndTime,new Date());
+        return ObjectUtils.isNotEmpty(this.getOne(wrapper));
+    }
 }
