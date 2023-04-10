@@ -34,6 +34,7 @@ const updateDialog = ref(false)
 
 const updateForm = reactive({
   id: '',
+  password: '',
   name: '',
   code: null,
   education: '',
@@ -47,6 +48,7 @@ const updateForm = reactive({
 })
 function updateUser (row) {
   updateForm.id = row.id
+  updateForm.password = row.password
   updateForm.code = row.code
   updateForm.name = row.name
   updateForm.phone = row.phone
@@ -150,6 +152,9 @@ function insertEmployee () {
       <el-form-item label="员工编号">
         <el-input v-model="updateForm.code" />
       </el-form-item>
+      <el-form-item label="登录密码">
+        <el-input v-model="updateForm.password" />
+      </el-form-item>
       <el-form-item label="员工姓名">
         <el-input v-model="updateForm.name" />
       </el-form-item>
@@ -193,7 +198,7 @@ function insertEmployee () {
     </template>
   </el-dialog>
 
-  <el-dialog v-model="insertDialog" title="新增用户信息" width="30%" :before-close="handleClose">
+  <el-dialog v-model="insertDialog" title="新增用户信息" width="30%">
     <el-form :label-position="right" label-width="100px" :model="updateForm" style="max-width: 460px">
       <el-form-item label="员工编号">
         <el-input v-model="insertForm.code" />
