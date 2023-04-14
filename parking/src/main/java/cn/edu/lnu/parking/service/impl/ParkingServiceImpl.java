@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import javax.swing.*;
 import java.util.Date;
 import java.util.List;
 import java.util.WeakHashMap;
@@ -33,16 +34,36 @@ public class ParkingServiceImpl extends ServiceImpl<ParkingMapper, Parking> impl
     @Autowired
     private CardService cardService;
     @Autowired
+    private AreaService areaService;
+    @Autowired
     @Lazy
     private CarNumPlaceRelService relService;
 
     @Override
     public Result insert(Parking parking) {
-        if (ObjectUtils.isNull(parking.getCode(), parking.getIsPrivate(), parking.getType(), parking.getAreaId())) {
+        if (ObjectUtils.isNull( parking.getType(), parking.getAreaId())) {
             return Result.error("请正确填写信息");
         }
+        parking.setCode(this.getCode(parking.getAreaId()));
         this.save(parking);
         return Result.success();
+    }
+
+    private String getCode(Integer areaId){
+        String prefix = areaService.getById(areaId).getName();
+        LambdaQueryWrapper<Parking> wrapper= new LambdaQueryWrapper<>();
+        wrapper.eq(Parking::getAreaId,areaId);
+        Integer count = this.count(wrapper)+1;
+        String countStr = count.toString();
+        if(count<10){
+            countStr = "00"+countStr;
+        }else if(count<100){
+            countStr = "0"+countStr;
+        }else {
+
+        }
+        return prefix+ countStr;
+
     }
 
     @Override
@@ -359,5 +380,6 @@ public class ParkingServiceImpl extends ServiceImpl<ParkingMapper, Parking> impl
         if (vo.getIsPrivate() != null) {
             wrapper.eq(Parking::getIsPrivate, vo.getIsPrivate());
         }
+        wrapper.orderByAsc(Parking::getAreaId).orderByAsc(Parking::getCode);
     }
 }

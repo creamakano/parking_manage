@@ -10,6 +10,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface ChargeLogService extends IService<ChargeLog> {
     Result getPage(ChargeLogVo vo);
 
+    Result frontPage(ChargeLogVo vo, Integer userId);
+
     // Result getPage(ParkingLogVo vo);
 
 }

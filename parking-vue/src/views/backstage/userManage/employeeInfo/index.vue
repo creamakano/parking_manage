@@ -114,7 +114,7 @@ function insertEmployee () {
     <el-button type="primary" @click="insertDialog = true">新增员工</el-button>
   </div>
 
-  <el-table :data="userInfo" stripe style="width: 70%;margin: 10px auto; " :cell-style="{ textAlign: 'center' }"
+  <el-table :data="userInfo" stripe style="width: 80%;margin: 10px auto; " :cell-style="{ textAlign: 'center' }"
     height="570" :header-cell-style="{ 'text-align': 'center' }">
     <el-table-column prop="id" label="员工ID" />
     <el-table-column prop="code" label="员工编号" />
@@ -252,7 +252,7 @@ function insertEmployee () {
 
 <style scoped>
 .query-line {
-  width: 70%;
+  width: 77%;
   display: flex;
   justify-content: end;
   margin: 0 auto;

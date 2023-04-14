@@ -26,7 +26,7 @@ function login () {
     }
   })
 }
-const activeName = ref('second')
+const activeName = ref('first')
 function registry () {
   post('/user/registry', registryForm).then(res => {
     if (res.code == 200) {

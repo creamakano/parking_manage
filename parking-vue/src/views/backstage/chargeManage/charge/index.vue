@@ -140,7 +140,7 @@ function stop (id) {
 </script>
 <template>
   <div class="all-c">
-    <h1>车位信息管理</h1>
+    <h1>充电车位管理</h1>
     <el-divider />
     <div class="contain-c">
 

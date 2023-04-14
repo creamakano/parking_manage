@@ -50,10 +50,11 @@ function cardInsert () {
       } else {
         post('/card/insert', {
           carNum: carNum.value,
-          type: type.value
+          type: type.value,
+          returnUrl: '/front/home/buyCard'
         }).then(res => {
-          ElMessage.success(res.msg)
-          openModelFlag.value = false
+          document.querySelector('body').innerHTML = res.data
+          document.forms[0].submit()
         })
       }
     }
@@ -74,10 +75,11 @@ const open = (msg) => {
     .then(() => {
       post('/card/insert', {
         carNum: carNum.value,
-        type: type.value
+        type: type.value,
+        returnUrl: '/front/home/buyCard'
       }).then(res => {
-        ElMessage.success(res.msg)
-        openModelFlag.value = false
+        document.querySelector('body').innerHTML = res.data
+        document.forms[0].submit()
       })
     })
     .catch(() => {
@@ -96,20 +98,24 @@ const open = (msg) => {
     <el-divider />
     <div class="contain-c">
 
-      <div class="card-c">
+      <div class="card-c"
+        style="background-image: url('/src/assets/icons/year-card.png');  background-repeat:no-repeat; background-size: 500px 300px;">
         <div class="title">
           <h2>停车场年卡</h2>
         </div>
         <div class="footer">
+          <div>￥2888</div>
           <el-button @click="openModel(1)">购买</el-button>
         </div>
       </div>
 
-      <div class="card-c">
+      <div class="card-c"
+        style="background-image: url('/src/assets/icons/month-card.png');  background-repeat:no-repeat; background-size: 500px 300px;">
         <div class="title">
           <h2>停车场月卡</h2>
         </div>
         <div class="footer">
+          <div>￥280</div>
           <el-button @click="openModel(2)">购买</el-button>
         </div>
       </div>
@@ -161,7 +167,10 @@ const open = (msg) => {
 }
 
 .footer {
-  padding: 20px;
-  text-align: end;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  box-sizing: border-box;
 }
 </style>

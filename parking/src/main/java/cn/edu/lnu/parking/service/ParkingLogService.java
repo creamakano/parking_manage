@@ -9,4 +9,5 @@ public interface ParkingLogService extends IService<ParkingLog> {
 
     Result getPage(ParkingLogVo vo);
 
+    Result getFrontPage(ParkingLogVo vo, Integer userId);
 }

@@ -18,4 +18,5 @@ public class CardVo extends BaseVo implements Serializable {
      */
     private Integer type;
     private Integer carType;
+    private String returnUrl;
 }
