@@ -37,6 +37,12 @@ function logout () {
       <el-menu-item index="/front/home/buyCard">优惠套餐</el-menu-item>
       <el-menu-item index="/front/home/myCard">我的套餐</el-menu-item>
     </el-sub-menu>
+
+    <el-sub-menu index="/front/home/parkingLog">
+      <template #title>停车充电记录</template>
+      <el-menu-item index="/front/home/parkingLog">停车记录</el-menu-item>
+      <el-menu-item index="/front/home/chargeLog">充电记录</el-menu-item>
+    </el-sub-menu>
     <el-menu-item index="#" @click="logout">安全退出</el-menu-item>
 
 

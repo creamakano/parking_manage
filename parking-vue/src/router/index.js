@@ -121,6 +121,14 @@ const router = createRouter({
           path: "myCard",
           component: () => import('../views/reception/myInfo/myCard/index.vue')
         },
+        {
+          path: "parkingLog",
+          component: () => import('../views/reception/log/parkLog/index.vue')
+        },
+        {
+          path: "chargeLog",
+          component: () => import('../views/reception/log/chargeLog/index.vue')
+        },
       ]
     }
   ]
