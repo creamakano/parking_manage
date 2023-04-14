@@ -5,6 +5,7 @@ import BackHomeView from '../views/backstage/home/index.vue'
 import FrontHomeView from '../views/reception/home/index.vue'
 import PayView from '../views/pay/test.vue'
 import { awaitGet } from '../tool/http.js'
+import store from '../store'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -135,8 +136,9 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  if (to.path == '/back/' ) {
-    if (store.state.employee.position == '') {
+  var reg = RegExp('^/back/')
+  if (to.path.match(reg)) {
+    if (!store.state.employee.position) {
       await awaitGet('/employee/session').then(res => {
         if (res.code == 200) {
           store.commit('setEmployee', res.data)
@@ -150,9 +152,12 @@ router.beforeEach(async (to, from, next) => {
       ElMessage.error("权限不足")
       router.push('/')
     }
+    next()
+  } else {
+    next()//需要调用next()才能放行
+
   }
 
-  next()//需要调用next()才能放行
 })
 
 
