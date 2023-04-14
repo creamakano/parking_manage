@@ -131,7 +131,7 @@ public class ChargeServiceImpl extends ServiceImpl<ChargeMapper, Charge> impleme
         order.setOut_trade_no(OrderUtil.getOrderNum());
         order.setSubject("充电收费");
         order.setTotal_amount(String.valueOf(log.getCost()));
-        order.setReturnUrl("/front/home/charge");
+        order.setReturnUrl("/back/home/charge");
         //获取车辆主人
         LambdaQueryWrapper<CarNum> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(CarNum::getNum,log.getCarNum());
