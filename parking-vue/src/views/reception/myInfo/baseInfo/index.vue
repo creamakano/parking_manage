@@ -201,7 +201,11 @@ function updateUserInfo () {
               性别
             </div>
           </template>
-          {{ sex[userInfo.sex] }}
+          <el-select v-model="userInfo.sex" class="m-2" placeholder="Select">
+            <el-option label="男" :value="0" />
+            <el-option label="女" :value="1" />
+
+          </el-select>
         </el-descriptions-item>
         <el-descriptions-item>
           <template #label>
@@ -212,7 +216,8 @@ function updateUserInfo () {
               生日
             </div>
           </template>
-          {{ userInfo.birth }}
+          <el-date-picker v-model="userInfo.birth" type="date" placeholder=" " value-format="YYYY-MM-DD"
+            format="YYYY-MM-DD" />
         </el-descriptions-item>
         <el-descriptions-item>
           <template #label>

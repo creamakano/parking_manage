@@ -46,12 +46,12 @@ public class CarNumPlaceRelServiceImpl extends ServiceImpl<CarNumPlaceRelMapper,
             return Result.error("该车位在停中,不能租借");
         }
         //更改时间
-        Date updateTime = rel.getUpdateTime();
+        // Date updateTime = rel.getUpdateTime();
         Date now = new Date();
-        long days = 7 - (now.getTime() - updateTime.getTime()) / 86400000 ;
-        if(days > 0 ){
-            return Result.error("未达更改时间，距离下次可更改时间还有"+days+"天");
-        }
+        // long days = 7 - (now.getTime() - updateTime.getTime()) / 86400000 ;
+        // if(days > 0 ){
+        //     return Result.error("未达更改时间，距离下次可更改时间还有"+days+"天");
+        // }
         if(rel.getCarNum().equals(carNumPlaceRel.getCarNum())){
             return Result.error("租借的车牌号和当前车位所属车牌号相同");
         }
@@ -74,12 +74,12 @@ public class CarNumPlaceRelServiceImpl extends ServiceImpl<CarNumPlaceRelMapper,
             return Result.error("该车位在停中,不能更改");
         }
         //更改时间
-        Date updateTime = rel.getUpdateTime();
+        // Date updateTime = rel.getUpdateTime();
         Date now = new Date();
-        long days = 7 - (now.getTime() - updateTime.getTime()) / 86400000 ;
-        if(days > 0 ){
-            return Result.error("未达更改时间，距离下次可更改时间还有"+days+"天");
-        }
+        // long days = 7 - (now.getTime() - updateTime.getTime()) / 86400000 ;
+        // if(days > 0 ){
+        //     return Result.error("未达更改时间，距离下次可更改时间还有"+days+"天");
+        // }
         LambdaQueryWrapper<CarNumPlaceRel> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(CarNumPlaceRel::getCarNum,rel.getCarNum());
         wrapper.ne(CarNumPlaceRel::getId,rel.getId());
