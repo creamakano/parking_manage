@@ -200,9 +200,7 @@ function handleCurrentChange () {
             <el-option v-for="item in area" :key="item.id" :label="item.name" :value="item.id" style="width: 225px;" />
           </el-select>
         </el-form-item>
-        <el-form-item label="车位编号" label-width="180" required>
-          <el-input v-model="addForm.code" autocomplete="off" style="width: 225px;" />
-        </el-form-item>
+      
         <el-form-item label="车位类型" label-width="180" required>
           <el-select v-model="addForm.type" placeholder=" " style="width: 225px;">
             <el-option label="机动车" value="1" />
